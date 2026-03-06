@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: qisur
+      POSTGRES_PASSWORD: qisur
+      POSTGRES_DB: qisur_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://qisur:qisur@db:5432/qisur_db
+      JWT_SECRET: asjhfiusafieq423423"#$32/&#$2
+      JWT_EXPIRES_IN: 24h
+      PORT: 3000
+    ports:
+      - '3000:3000'
+
+volumes:
+  pgdata:

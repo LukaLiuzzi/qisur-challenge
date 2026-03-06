@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+  VIEWER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  products    ProductCategory[]
+}
+
+model Product {
+  id          Int               @id @default(autoincrement())
+  name        String
+  description String?
+  price       Decimal           @db.Decimal(10, 2)
+  stock       Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  categories  ProductCategory[]
+  history     ProductHistory[]
+
+  @@index([name])
+  @@index([price])
+}
+
+model ProductCategory {
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId Int
+
+  @@id([productId, categoryId])
+}
+
+model ProductHistory {
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  price     Decimal  @db.Decimal(10, 2)
+  stock     Int
+  changedAt DateTime @default(now())
+
+  @@index([productId, changedAt])
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  level     String
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([level])
+  @@index([createdAt])
+}
